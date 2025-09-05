@@ -2,17 +2,18 @@ import { type NextRequest, NextResponse } from "next/server"
 
 interface SyncRequest {
   selectedPlaylists: string[]
+  selectedSecondaryPlaylists: string[]
   syncDirection: "one-way" | "two-way"
   syncFrequency: string
 }
 
 export async function POST(request: NextRequest) {
   try {
-    const { selectedPlaylists, syncDirection, syncFrequency }: SyncRequest = await request.json()
+    const { selectedPlaylists, selectedSecondaryPlaylists, syncDirection, syncFrequency }: SyncRequest =
+      await request.json()
 
-    // In a real app, you'd retrieve access tokens for both accounts
-    const primaryToken = getStoredAccessToken("primary")
-    const secondaryToken = getStoredAccessToken("secondary")
+    const primaryToken = getStoredAccessToken("primary", request)
+    const secondaryToken = getStoredAccessToken("secondary", request)
 
     if (!primaryToken || !secondaryToken) {
       return NextResponse.json({ error: "Both accounts must be connected" }, { status: 400 })
@@ -20,7 +21,9 @@ export async function POST(request: NextRequest) {
 
     let totalSongsSynced = 0
 
-    for (const playlistId of selectedPlaylists) {
+    const allSelectedPlaylists = [...selectedPlaylists, ...selectedSecondaryPlaylists]
+
+    for (const playlistId of allSelectedPlaylists) {
       if (playlistId === "liked_songs") {
         // Handle liked songs sync
         totalSongsSynced += await syncLikedSongs(primaryToken, secondaryToken, syncDirection)
@@ -31,12 +34,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Log sync activity (in a real app, store in database)
-    console.log(`Sync completed: ${selectedPlaylists.length} playlists, ${totalSongsSynced} songs`)
+    console.log(`Sync completed: ${allSelectedPlaylists.length} playlists, ${totalSongsSynced} songs`)
 
     return NextResponse.json({
       success: true,
-      playlistCount: selectedPlaylists.length,
+      playlistCount: allSelectedPlaylists.length,
       songCount: totalSongsSynced,
+      totalSongs: totalSongsSynced,
       message: "Sync completed successfully",
     })
   } catch (error) {
@@ -144,8 +148,19 @@ async function syncPlaylist(
   }
 }
 
-// Mock function - in a real app, implement proper token storage
-function getStoredAccessToken(account: string): string | null {
-  // This would retrieve from your secure storage
-  return null
+function getStoredAccessToken(account: string, request: NextRequest): string | null {
+  try {
+    const cookieName = `spotify_${account}_token`
+    const tokenCookie = request.cookies.get(cookieName)
+
+    if (!tokenCookie) {
+      return null
+    }
+
+    // Return the token directly as it's stored as a plain string
+    return decodeURIComponent(tokenCookie.value)
+  } catch (error) {
+    console.error(`Failed to retrieve ${account} token:`, error)
+    return null
+  }
 }
