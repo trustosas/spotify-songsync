@@ -8,6 +8,10 @@ export async function POST(request: NextRequest) {
   try {
     const { accountType } = await request.json()
 
+    console.log("[v0] Auth request - Client ID exists:", !!SPOTIFY_CLIENT_ID)
+    console.log("[v0] Auth request - Redirect URI:", REDIRECT_URI)
+    console.log("[v0] Auth request - Account type:", accountType)
+
     // Generate state parameter for security
     const state = Math.random().toString(36).substring(2, 15)
 
@@ -27,6 +31,8 @@ export async function POST(request: NextRequest) {
     authUrl.searchParams.append("scope", scopes)
     authUrl.searchParams.append("redirect_uri", REDIRECT_URI)
     authUrl.searchParams.append("state", `${state}_${accountType}`)
+
+    console.log("[v0] Generated auth URL:", authUrl.toString())
 
     return NextResponse.json({
       authUrl: authUrl.toString(),
