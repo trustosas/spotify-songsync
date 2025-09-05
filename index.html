@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spotify Playlist Sync</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Circular+Std:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <div class="logo">
+                    <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                        <path d="M16 0C7.164 0 0 7.164 0 16s7.164 16 16 16 16-7.164 16-16S24.836 0 16 0zm7.32 23.076c-.292.484-.916.636-1.4.34-3.836-2.344-8.668-2.876-14.356-1.576-.548.124-1.096-.216-1.22-.764-.124-.548.216-1.096.764-1.22 6.204-1.42 11.556-.828 15.756 1.824.484.292.636.916.34 1.4-.004-.004-.004-.004 0 0zm2-5.032c-.372.604-1.156.792-1.76.42-4.392-2.7-11.088-3.476-16.284-1.9-.668.204-1.376-.172-1.58-.84-.204-.668.172-1.376.84-1.58 5.932-1.804 13.348-.932 18.364 2.164.604.372.792 1.156.42 1.76v-.024zm.172-5.236c-5.268-3.128-13.956-3.416-18.988-1.888-.804.244-1.652-.212-1.896-1.016-.244-.804.212-1.652 1.016-1.896 5.768-1.748 15.272-1.412 21.324 2.18.732.436.972 1.384.536 2.116-.436.732-1.384.972-2.116.536l.124-.032z" fill="#1DB954"/>
+                    </svg>
+                    <h1>Playlist Sync</h1>
+                </div>
+                <div class="user-menu">
+                    <div class="user-avatar"></div>
+                    <span class="username">John Doe</span>
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                        <path d="M3 6l5 5 5-5H3z"/>
+                    </svg>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Account Connection Section -->
+            <section class="account-section">
+                <h2>Connected Accounts</h2>
+                <div class="accounts-container">
+                    <div class="account-card connected">
+                        <div class="account-header">
+                            <div class="account-info">
+                                <div class="account-avatar primary"></div>
+                                <div class="account-details">
+                                    <h3>Primary Account</h3>
+                                    <p>john.doe@email.com</p>
+                                    <span class="connection-status connected">Connected</span>
+                                </div>
+                            </div>
+                            <button class="btn-secondary">Disconnect</button>
+                        </div>
+                    </div>
+
+                    <div class="account-card">
+                        <div class="account-header">
+                            <div class="account-info">
+                                <div class="account-avatar secondary"></div>
+                                <div class="account-details">
+                                    <h3>Secondary Account</h3>
+                                    <p>Connect your second Spotify account</p>
+                                    <span class="connection-status disconnected">Not Connected</span>
+                                </div>
+                            </div>
+                            <button class="btn-primary">Connect Account</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Sync Configuration -->
+            <section class="sync-section">
+                <div class="sync-header">
+                    <h2>Sync Configuration</h2>
+                    <button class="btn-primary btn-large">Start Sync</button>
+                </div>
+
+                <div class="sync-options">
+                    <div class="sync-direction">
+                        <h3>Sync Direction</h3>
+                        <div class="direction-options">
+                            <label class="radio-option">
+                                <input type="radio" name="direction" value="one-way" checked>
+                                <span class="radio-custom"></span>
+                                <div class="option-content">
+                                    <span class="option-title">One-way sync</span>
+                                    <span class="option-desc">Primary → Secondary</span>
+                                </div>
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="direction" value="two-way">
+                                <span class="radio-custom"></span>
+                                <div class="option-content">
+                                    <span class="option-title">Two-way sync</span>
+                                    <span class="option-desc">Keep both accounts in sync</span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="sync-frequency">
+                        <h3>Sync Frequency</h3>
+                        <select class="select-dropdown">
+                            <option value="manual">Manual only</option>
+                            <option value="hourly">Every hour</option>
+                            <option value="daily" selected>Daily</option>
+                            <option value="weekly">Weekly</option>
+                        </select>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Playlist Selection -->
+            <section class="playlist-section">
+                <h2>Select Playlists to Sync</h2>
+                
+                <div class="playlists-container">
+                    <div class="playlist-column">
+                        <div class="column-header">
+                            <h3>Primary Account Playlists</h3>
+                            <div class="search-box">
+                                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                                    <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+                                </svg>
+                                <input type="text" placeholder="Search playlists...">
+                            </div>
+                        </div>
+                        
+                        <div class="playlist-list">
+                            <div class="playlist-item special">
+                                <div class="playlist-cover liked-songs">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                                    </svg>
+                                </div>
+                                <div class="playlist-info">
+                                    <span class="playlist-name">Liked Songs</span>
+                                    <span class="playlist-meta">847 songs</span>
+                                </div>
+                                <label class="checkbox-container">
+                                    <input type="checkbox" checked>
+                                    <span class="checkmark"></span>
+                                </label>
+                            </div>
+
+                            <div class="playlist-item">
+                                <div class="playlist-cover">
+                                    <div class="placeholder-cover">
+                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/>
+                                        </svg>
+                                    </div>
+                                </div>
+                                <div class="playlist-info">
+                                    <span class="playlist-name">My Playlist #1</span>
+                                    <span class="playlist-meta">23 songs • Created by you</span>
+                                </div>
+                                <label class="checkbox-container">
+                                    <input type="checkbox">
+                                    <span class="checkmark"></span>
+                                </label>
+                            </div>
+
+                            <div class="playlist-item">
+                                <div class="playlist-cover">
+                                    <div class="placeholder-cover">
+                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/>
+                                        </svg>
+                                    </div>
+                                </div>
+                                <div class="playlist-info">
+                                    <span class="playlist-name">Workout Mix</span>
+                                    <span class="playlist-meta">45 songs • Created by you</span>
+                                </div>
+                                <label class="checkbox-container">
+                                    <input type="checkbox" checked>
+                                    <span class="checkmark"></span>
+                                </label>
+                            </div>
+
+                            <div class="playlist-item">
+                                <div class="playlist-cover">
+                                    <div class="placeholder-cover">
+                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/>
+                                        </svg>
+                                    </div>
+                                </div>
+                                <div class="playlist-info">
+                                    <span class="playlist-name">Chill Vibes</span>
+                                    <span class="playlist-meta">67 songs • Created by you</span>
+                                </div>
+                                <label class="checkbox-container">
+                                    <input type="checkbox">
+                                    <span class="checkmark"></span>
+                                </label>
+                            </div>
+
+                            <div class="playlist-item">
+                                <div class="playlist-cover">
+                                    <div class="placeholder-cover">
+                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/>
+                                        </svg>
+                                    </div>
+                                </div>
+                                <div class="playlist-info">
+                                    <span class="playlist-name">Road Trip 2024</span>
+                                    <span class="playlist-meta">89 songs • Created by you</span>
+                                </div>
+                                <label class="checkbox-container">
+                                    <input type="checkbox" checked>
+                                    <span class="checkmark"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="sync-arrow">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/>
+                        </svg>
+                    </div>
+
+                    <div class="playlist-column">
+                        <div class="column-header">
+                            <h3>Secondary Account Playlists</h3>
+                            <div class="search-box">
+                                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                                    <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+                                </svg>
+                                <input type="text" placeholder="Search playlists...">
+                            </div>
+                        </div>
+                        
+                        <div class="playlist-list empty">
+                            <div class="empty-state">
+                                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <circle cx="12" cy="12" r="10"/>
+                                    <path d="M8 12h8"/>
+                                </svg>
+                                <p>Connect your secondary account to view playlists</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Sync History -->
+            <section class="history-section">
+                <div class="history-header">
+                    <h2>Sync History</h2>
+                    <button class="btn-text">View All</button>
+                </div>
+                
+                <div class="history-list">
+                    <div class="history-item">
+                        <div class="history-icon success">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                                <path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/>
+                            </svg>
+                        </div>
+                        <div class="history-content">
+                            <div class="history-text">
+                                <span class="history-title">Manual sync completed</span>
+                                <span class="history-desc">3 playlists synced • 247 songs transferred</span>
+                            </div>
+                            <span class="history-time">2 hours ago</span>
+                        </div>
+                    </div>
+
+                    <div class="history-item">
+                        <div class="history-icon success">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                                <path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/>
+                            </svg>
+                        </div>
+                        <div class="history-content">
+                            <div class="history-text">
+                                <span class="history-title">Scheduled sync completed</span>
+                                <span class="history-desc">2 playlists synced • 12 songs transferred</span>
+                            </div>
+                            <span class="history-time">Yesterday</span>
+                        </div>
+                    </div>
+
+                    <div class="history-item">
+                        <div class="history-icon error">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                                <path d="M7.002 11a1 1 0 1 1 2 0 1 1 0 0 1-2 0zM7.1 4.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 4.995z"/>
+                            </svg>
+                        </div>
+                        <div class="history-content">
+                            <div class="history-text">
+                                <span class="history-title">Sync failed</span>
+                                <span class="history-desc">Connection timeout • Retry available</span>
+                            </div>
+                            <span class="history-time">2 days ago</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+</body>
+</html>
