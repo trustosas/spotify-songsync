@@ -194,48 +194,58 @@ export default function PlaylistSync() {
   }
 
   const checkAuthCallback = () => {
+    console.log("[v0] Checking auth callback, current URL:", window.location.href)
     const urlParams = new URLSearchParams(window.location.search)
     const connected = urlParams.get("connected")
     const user = urlParams.get("user")
+    console.log("[v0] URL params - connected:", connected, "user:", user)
 
     if (connected && user) {
+      console.log("[v0] Found auth callback params, clearing URL and loading stored data")
       // Clear URL parameters
       window.history.replaceState({}, document.title, window.location.pathname)
 
       // Load user data from cookies
       loadStoredAuthData()
     } else {
+      console.log("[v0] No callback params found, checking for existing stored auth")
       // Check for existing stored auth on page load
       loadStoredAuthData()
     }
   }
 
   const loadStoredAuthData = () => {
+    console.log("[v0] Loading stored auth data from cookies")
+
     // Check for primary account
     const primaryToken = getCookie("spotify_primary_token")
     const primaryUserData = getCookie("spotify_primary_user")
+    console.log("[v0] Primary token exists:", !!primaryToken, "Primary user data exists:", !!primaryUserData)
 
     if (primaryToken && primaryUserData) {
       try {
         const userData = JSON.parse(primaryUserData)
+        console.log("[v0] Setting primary account:", userData.display_name)
         setPrimaryAccount(userData)
         loadPrimaryPlaylists()
       } catch (error) {
-        console.error("Failed to parse primary user data:", error)
+        console.error("[v0] Failed to parse primary user data:", error)
       }
     }
 
     // Check for secondary account
     const secondaryToken = getCookie("spotify_secondary_token")
     const secondaryUserData = getCookie("spotify_secondary_user")
+    console.log("[v0] Secondary token exists:", !!secondaryToken, "Secondary user data exists:", !!secondaryUserData)
 
     if (secondaryToken && secondaryUserData) {
       try {
         const userData = JSON.parse(secondaryUserData)
+        console.log("[v0] Setting secondary account:", userData.display_name)
         setSecondaryAccount(userData)
         loadSecondaryPlaylists()
       } catch (error) {
-        console.error("Failed to parse secondary user data:", error)
+        console.error("[v0] Failed to parse secondary user data:", error)
       }
     }
   }
@@ -243,8 +253,9 @@ export default function PlaylistSync() {
   const getCookie = (name: string) => {
     const value = `; ${document.cookie}`
     const parts = value.split(`; ${name}=`)
-    if (parts.length === 2) return parts.pop()?.split(";").shift()
-    return null
+    const result = parts.length === 2 ? parts.pop()?.split(";").shift() : null
+    console.log("[v0] Getting cookie", name, "result:", result ? "found" : "not found")
+    return result
   }
 
   const filteredPlaylists = primaryPlaylists.filter((playlist) =>
@@ -269,7 +280,7 @@ export default function PlaylistSync() {
           <div className="flex items-center gap-3">
             <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
               <path
-                d="M16 0C7.164 0 0 7.164 0 16s7.164 16 16 16 16-7.164 16-16S24.836 0 16 0zm7.32 23.076c-.292.484-.916.636-1.4.34-3.836-2.344-8.668-2.876-14.356-1.576-.548.124-1.096-.216-1.22-.764-.124-.548.216-1.096.764-1.22 6.204-1.42 11.556-.828 15.756 1.824.484.292.636.916.34 1.4-.004-.004-.004-.004 0 0zm2-5.032c-.372.604-1.156.792-1.76.42-4.392-2.7-11.088-3.476-16.284-1.9-.668.204-1.376-.172-1.58-.84-.204-.668.172-1.376.84-1.58 5.932-1.804 13.348-.932 18.364 2.164.604.372.792 1.156.42 1.76v-.024zm.172-5.236c-5.268-3.128-13.956-3.416-18.988-1.888-.804.244-1.652-.212-1.896-1.016-.244-.804.212-1.652 1.016-1.896 5.768-1.748 15.272-1.412 21.324 2.18.732.436.972 1.384.536 2.116-.436.732-1.384.972-2.116.536l.124-.032z"
+                d="M16 0C7.164 0 0 7.164 0 16s7.164 16 16 16 16-7.164 16-16S24.836 0 16 0zm7.32 23.076c-.292.484-.916.636-1.4.34-3.836-2.344-8.668-2.876-14.356-1.576-.548.124-1.096-.216-1.22-.764-.124-.548.216-1.096.764-1.22 6.204-1.42 11.556-.828 15.756 1.824.484.292.636.916.34 1.4-.004-.004-.004-.004 0 0zm2-5.032c-.372.604-1.156.792-1.76.42-4.392-2.7-11.088-3.476-16.284-1.9-.668.204-1.376-.172-1.58-.84-.204-.668.172-1.376.84-1.58 5.932-1.804 13.348-.932 18.364 2.164.604.372.792 1.156.42 1.76v-.024zm.172-5.236c-5.268-3.128-13.956-3.416-18.988-1.888-.804.244-1.652-.212-1.896-1.016-.244-.804.172-1.652 1.016-1.896 5.768-1.748 15.272-1.412 21.324 2.18.732.436.972 1.384.536 2.116-.436.732-1.384.972-2.116.536l.124-.032z"
                 fill="#1DB954"
               />
             </svg>
