@@ -18,18 +18,27 @@ export async function GET(request: NextRequest) {
 
   if (error) {
     console.log("[v0] OAuth error received:", error)
-    return NextResponse.redirect(new URL("/?error=access_denied", request.url))
+    return NextResponse.redirect(new URL(`/?error=oauth_error&details=${error}`, request.url))
   }
 
   if (!code || !state) {
     console.log("[v0] Missing required parameters - code:", !!code, "state:", !!state)
-    return NextResponse.redirect(new URL("/?error=invalid_request", request.url))
+    return NextResponse.redirect(new URL("/?error=missing_params", request.url))
   }
 
   try {
     // Extract account type from state
     const [, accountType] = state.split("_")
     console.log("[v0] Extracted account type:", accountType)
+
+    const tokenRequestBody = new URLSearchParams({
+      grant_type: "authorization_code",
+      code,
+      redirect_uri: REDIRECT_URI,
+    })
+
+    console.log("[v0] Token request body:", tokenRequestBody.toString())
+    console.log("[v0] Using redirect URI for token exchange:", REDIRECT_URI)
 
     // Exchange code for access token
     const tokenResponse = await fetch("https://accounts.spotify.com/api/token", {
@@ -38,23 +47,28 @@ export async function GET(request: NextRequest) {
         "Content-Type": "application/x-www-form-urlencoded",
         Authorization: `Basic ${Buffer.from(`${SPOTIFY_CLIENT_ID}:${SPOTIFY_CLIENT_SECRET}`).toString("base64")}`,
       },
-      body: new URLSearchParams({
-        grant_type: "authorization_code",
-        code,
-        redirect_uri: REDIRECT_URI,
-      }),
+      body: tokenRequestBody,
     })
 
     console.log("[v0] Token response status:", tokenResponse.status)
+    console.log("[v0] Token response headers:", Object.fromEntries(tokenResponse.headers.entries()))
 
     if (!tokenResponse.ok) {
       const errorText = await tokenResponse.text()
-      console.log("[v0] Token exchange failed:", errorText)
-      throw new Error("Failed to exchange code for token")
+      console.log("[v0] Token exchange failed with status:", tokenResponse.status)
+      console.log("[v0] Token exchange error response:", errorText)
+
+      return NextResponse.redirect(
+        new URL(
+          `/?error=token_exchange_failed&status=${tokenResponse.status}&details=${encodeURIComponent(errorText)}`,
+          request.url,
+        ),
+      )
     }
 
     const tokens = await tokenResponse.json()
     console.log("[v0] Tokens received - access_token exists:", !!tokens.access_token)
+    console.log("[v0] Token expires_in:", tokens.expires_in)
 
     // Get user profile
     const profileResponse = await fetch("https://api.spotify.com/v1/me", {
@@ -63,8 +77,16 @@ export async function GET(request: NextRequest) {
       },
     })
 
+    if (!profileResponse.ok) {
+      const profileError = await profileResponse.text()
+      console.log("[v0] Profile fetch failed:", profileError)
+      return NextResponse.redirect(
+        new URL(`/?error=profile_fetch_failed&details=${encodeURIComponent(profileError)}`, request.url),
+      )
+    }
+
     const profile = await profileResponse.json()
-    console.log("[v0] Profile received:", profile.display_name)
+    console.log("[v0] Profile received:", profile.display_name, profile.email)
 
     const response = NextResponse.redirect(
       new URL(`/?connected=${accountType}&user=${encodeURIComponent(profile.display_name)}`, request.url),
@@ -92,10 +114,14 @@ export async function GET(request: NextRequest) {
       maxAge: tokens.expires_in || 3600,
     })
 
-    console.log("[v0] Cookies set for account type:", accountType)
+    console.log("[v0] Cookies set successfully for account type:", accountType)
+    console.log("[v0] Redirecting to homepage with success params")
     return response
   } catch (error) {
     console.error("[v0] Callback error:", error)
-    return NextResponse.redirect(new URL("/?error=auth_failed", request.url))
+    const errorMessage = error instanceof Error ? error.message : "Unknown error"
+    return NextResponse.redirect(
+      new URL(`/?error=callback_exception&details=${encodeURIComponent(errorMessage)}`, request.url),
+    )
   }
 }
