@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
+import { cookies } from "next/headers"
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
@@ -54,8 +55,21 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// Mock function - in a real app, implement proper token storage
 function getStoredAccessToken(account: string): string | null {
-  // This would retrieve from your secure storage (database, encrypted session, etc.)
-  return null
+  try {
+    const cookieName = `spotify_${account}_token`
+    const tokenCookie = cookies().get(cookieName)
+
+    if (!tokenCookie?.value) {
+      console.log(`[v0] No token found for account: ${account}`)
+      return null
+    }
+
+    const tokenData = JSON.parse(decodeURIComponent(tokenCookie.value))
+    console.log(`[v0] Retrieved token for account: ${account}`)
+    return tokenData.access_token
+  } catch (error) {
+    console.error(`[v0] Error retrieving token for ${account}:`, error)
+    return null
+  }
 }
