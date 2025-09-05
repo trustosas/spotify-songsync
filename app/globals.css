@@ -38,10 +38,12 @@
   --sidebar-accent-foreground: #ffffff;
   --sidebar-border: #404040;
   --sidebar-ring: #1db954;
+  --font-nunito-sans: "Nunito Sans", sans-serif; /* Added font configuration */
 }
 
 @theme inline {
-  --font-sans: var(--font-geist-sans);
+  /* Updated font configuration to use Nunito Sans instead of Geist */
+  --font-sans: var(--font-nunito-sans);
   --font-mono: var(--font-geist-mono);
   --color-background: var(--background);
   --color-foreground: var(--foreground);

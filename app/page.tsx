@@ -493,34 +493,24 @@ export default function PlaylistSync() {
             </Button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
-            <div>
-              <h3 className="text-lg sm:text-xl font-semibold text-white mb-4">Sync Direction</h3>
-              <RadioGroup value={syncDirection} onValueChange={setSyncDirection} className="space-y-3 sm:space-y-4">
-                <div className="flex items-center space-x-3 p-3 sm:p-4 bg-[#282828] rounded-lg border border-[#1DB954] bg-[rgba(29,185,84,0.1)]">
-                  <RadioGroupItem value="one-way" id="one-way" className="border-[#1DB954] text-[#1DB954]" />
-                  <Label htmlFor="one-way" className="flex-1 cursor-pointer">
-                    <div className="text-white font-semibold text-sm sm:text-base">One-way sync</div>
-                    <div className="text-[#b3b3b3] text-xs sm:text-sm">Primary → Secondary</div>
-                  </Label>
-                </div>
-                <div className="flex items-center space-x-3 p-3 sm:p-4 bg-[#282828] rounded-lg hover:bg-[#3e3e3e] transition-colors">
-                  <RadioGroupItem value="two-way" id="two-way" className="border-[#404040]" />
-                  <Label htmlFor="two-way" className="flex-1 cursor-pointer">
-                    <div className="text-white font-semibold text-sm sm:text-base">Two-way sync</div>
-                    <div className="text-[#b3b3b3] text-xs sm:text-sm">Keep both accounts in sync</div>
-                  </Label>
-                </div>
-              </RadioGroup>
-            </div>
-
-            <div>
-              <h3 className="text-lg sm:text-xl font-semibold text-white mb-4">Auto Sync Frequency</h3>
-              <div className="p-3 sm:p-4 bg-[#282828] rounded-lg border border-[#404040]">
-                <div className="text-white font-semibold text-sm sm:text-base">Daily</div>
-                <div className="text-[#b3b3b3] text-xs sm:text-sm">Automatic sync runs once per day</div>
+          <div>
+            <h3 className="text-lg sm:text-xl font-semibold text-white mb-4">Sync Direction</h3>
+            <RadioGroup value={syncDirection} onValueChange={setSyncDirection} className="space-y-3 sm:space-y-4">
+              <div className="flex items-center space-x-3 p-3 sm:p-4 bg-[#282828] rounded-lg border border-[#1DB954] bg-[rgba(29,185,84,0.1)]">
+                <RadioGroupItem value="one-way" id="one-way" className="border-[#1DB954] text-[#1DB954]" />
+                <Label htmlFor="one-way" className="flex-1 cursor-pointer">
+                  <div className="text-white font-semibold text-sm sm:text-base">One-way sync</div>
+                  <div className="text-[#b3b3b3] text-xs sm:text-sm">Primary → Secondary</div>
+                </Label>
               </div>
-            </div>
+              <div className="flex items-center space-x-3 p-3 sm:p-4 bg-[#282828] rounded-lg hover:bg-[#3e3e3e] transition-colors">
+                <RadioGroupItem value="two-way" id="two-way" className="border-[#404040]" />
+                <Label htmlFor="two-way" className="flex-1 cursor-pointer">
+                  <div className="text-white font-semibold text-sm sm:text-base">Two-way sync</div>
+                  <div className="text-[#b3b3b3] text-xs sm:text-sm">Keep both accounts in sync</div>
+                </Label>
+              </div>
+            </RadioGroup>
           </div>
         </section>
 
