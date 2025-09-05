@@ -253,7 +253,7 @@ export default function PlaylistSync() {
   const getCookie = (name: string) => {
     const value = `; ${document.cookie}`
     const parts = value.split(`; ${name}=`)
-    const result = parts.length === 2 ? parts.pop()?.split(";").shift() : null
+    const result = parts.length === 2 ? decodeURIComponent(parts.pop()?.split(";").shift() || "") : null
     console.log("[v0] Getting cookie", name, "result:", result ? "found" : "not found")
     return result
   }
