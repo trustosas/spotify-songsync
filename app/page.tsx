@@ -34,6 +34,7 @@ export default function PlaylistSync() {
   const [primaryPlaylists, setPrimaryPlaylists] = useState<SpotifyPlaylist[]>([])
   const [secondaryPlaylists, setSecondaryPlaylists] = useState<SpotifyPlaylist[]>([])
   const [selectedPlaylists, setSelectedPlaylists] = useState<string[]>([])
+  const [selectedSecondaryPlaylists, setSelectedSecondaryPlaylists] = useState<string[]>([])
   const [syncDirection, setSyncDirection] = useState("one-way")
   const [searchTerm, setSearchTerm] = useState("")
   const [isLoading, setIsLoading] = useState(false)
@@ -127,7 +128,7 @@ export default function PlaylistSync() {
   }
 
   const startSync = async () => {
-    if (selectedPlaylists.length === 0) {
+    if (selectedPlaylists.length === 0 && selectedSecondaryPlaylists.length === 0) {
       alert("Please select at least one playlist to sync.")
       return
     }
@@ -144,6 +145,7 @@ export default function PlaylistSync() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           selectedPlaylists,
+          selectedSecondaryPlaylists,
           syncDirection,
           syncFrequency: "daily",
         }),
@@ -155,10 +157,10 @@ export default function PlaylistSync() {
           id: Date.now().toString(),
           type: "manual",
           status: "success",
-          playlistCount: selectedPlaylists.length,
+          playlistCount: selectedPlaylists.length + selectedSecondaryPlaylists.length,
           songCount: result.totalSongs || 0,
           timestamp: new Date(),
-          message: `Successfully synced ${selectedPlaylists.length} playlist${selectedPlaylists.length > 1 ? "s" : ""}`,
+          message: `Successfully synced ${selectedPlaylists.length + selectedSecondaryPlaylists.length} playlist${selectedPlaylists.length + selectedSecondaryPlaylists.length > 1 ? "s" : ""}`,
         }
         saveSyncHistory(newHistoryItem)
         alert(`Sync completed! ${result.totalSongs || 0} songs transferred.`)
@@ -454,7 +456,7 @@ export default function PlaylistSync() {
             <Button
               className="bg-[#1DB954] hover:bg-[#1ed760] text-white px-8 py-3 text-lg font-bold"
               onClick={startSync}
-              disabled={isLoading || selectedPlaylists.length === 0}
+              disabled={isLoading || (selectedPlaylists.length === 0 && selectedSecondaryPlaylists.length === 0)}
             >
               Start Sync
             </Button>
@@ -601,7 +603,10 @@ export default function PlaylistSync() {
                   </div>
                 ) : (
                   secondaryPlaylists.map((playlist) => (
-                    <div key={playlist.id} className="flex items-center p-4 gap-4">
+                    <div
+                      key={playlist.id}
+                      className="flex items-center p-4 gap-4 hover:bg-[#3e3e3e] transition-colors cursor-pointer"
+                    >
                       <div className="w-12 h-12 rounded flex-shrink-0">
                         {playlist.images && playlist.images.length > 0 ? (
                           <img
@@ -627,6 +632,17 @@ export default function PlaylistSync() {
                             ` • Created by ${playlist.owner.display_name}`}
                         </div>
                       </div>
+                      <Checkbox
+                        checked={selectedSecondaryPlaylists.includes(playlist.id)}
+                        onCheckedChange={(checked) => {
+                          if (checked) {
+                            setSelectedSecondaryPlaylists((prev) => [...prev, playlist.id])
+                          } else {
+                            setSelectedSecondaryPlaylists((prev) => prev.filter((id) => id !== playlist.id))
+                          }
+                        }}
+                        className="border-[#404040] data-[state=checked]:bg-[#1DB954] data-[state=checked]:border-[#1DB954]"
+                      />
                     </div>
                   ))
                 )}
