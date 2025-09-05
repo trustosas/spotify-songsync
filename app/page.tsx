@@ -9,7 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
 import { useToast } from "@/hooks/use-toast"
-import { Search, ChevronRight, Check, AlertCircle, Music, Heart, User, ChevronDown, X } from "lucide-react"
+import { Search, ChevronRight, Check, AlertCircle, Music, Heart, User, X } from "lucide-react"
 
 interface SpotifyPlaylist {
   id: string
@@ -316,13 +316,6 @@ export default function PlaylistSync() {
               className="sm:w-8 sm:h-8 rounded-full"
             />
             <h1 className="text-lg sm:text-2xl font-bold text-white">Playlist Sync</h1>
-          </div>
-          <div className="flex items-center gap-2 sm:gap-3 px-2 sm:px-4 py-2 bg-[#282828] rounded-full hover:bg-[#3e3e3e] transition-colors cursor-pointer">
-            <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-gradient-to-br from-[#1DB954] to-[#1ed760]"></div>
-            <span className="text-white font-semibold text-sm sm:text-base hidden xs:block">
-              {primaryAccount?.display_name || "Not Connected"}
-            </span>
-            <ChevronDown className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
           </div>
         </div>
       </header>
