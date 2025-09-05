@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
-import { Search, ChevronRight, Check, AlertCircle, Music, Heart, User, ChevronDown } from "lucide-react"
+import { Search, ChevronRight, Check, AlertCircle, Music, Heart, User, ChevronDown, X } from "lucide-react"
 
 interface SpotifyPlaylist {
   id: string
@@ -38,6 +38,7 @@ export default function PlaylistSync() {
   const [searchTerm, setSearchTerm] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [syncHistory, setSyncHistory] = useState<SyncHistory[]>([])
+  const [authError, setAuthError] = useState<{ type: string; message: string } | null>(null)
 
   useEffect(() => {
     loadUserData()
@@ -51,7 +52,6 @@ export default function PlaylistSync() {
 
   const loadSyncHistory = async () => {
     try {
-      // Load sync history from localStorage for now (since no DB)
       const stored = localStorage.getItem("spotifySync_history")
       if (stored) {
         const history = JSON.parse(stored).map((item: any) => ({
@@ -66,7 +66,7 @@ export default function PlaylistSync() {
   }
 
   const saveSyncHistory = (newItem: SyncHistory) => {
-    const updated = [newItem, ...syncHistory].slice(0, 10) // Keep last 10 items
+    const updated = [newItem, ...syncHistory].slice(0, 10)
     setSyncHistory(updated)
     localStorage.setItem("spotifySync_history", JSON.stringify(updated))
   }
@@ -82,7 +82,6 @@ export default function PlaylistSync() {
 
       if (response.ok) {
         const { authUrl } = await response.json()
-        // Redirect to Spotify OAuth
         window.location.href = authUrl
       } else {
         throw new Error("Failed to initiate OAuth")
@@ -198,18 +197,37 @@ export default function PlaylistSync() {
     const urlParams = new URLSearchParams(window.location.search)
     const connected = urlParams.get("connected")
     const user = urlParams.get("user")
+    const error = urlParams.get("error")
+    const errorDetails = urlParams.get("details")
+
     console.log("[v0] URL params - connected:", connected, "user:", user)
+
+    if (error) {
+      console.log("[v0] Auth error received:", error, errorDetails)
+      let errorMessage = "Authentication failed. Please try again."
+
+      if (error === "profile_fetch_failed") {
+        errorMessage = decodeURIComponent(errorDetails || "Failed to fetch user profile")
+      } else if (error === "token_exchange_failed") {
+        errorMessage = "Failed to exchange authorization code. Please check your Spotify app configuration."
+      } else if (error === "oauth_error") {
+        errorMessage = `OAuth error: ${errorDetails || "Unknown error"}`
+      }
+
+      setAuthError({ type: error, message: errorMessage })
+
+      window.history.replaceState({}, document.title, window.location.pathname)
+      return
+    }
 
     if (connected && user) {
       console.log("[v0] Found auth callback params, clearing URL and loading stored data")
-      // Clear URL parameters
+      setAuthError(null)
       window.history.replaceState({}, document.title, window.location.pathname)
 
-      // Load user data from cookies
       loadStoredAuthData()
     } else {
       console.log("[v0] No callback params found, checking for existing stored auth")
-      // Check for existing stored auth on page load
       loadStoredAuthData()
     }
   }
@@ -217,7 +235,6 @@ export default function PlaylistSync() {
   const loadStoredAuthData = () => {
     console.log("[v0] Loading stored auth data from cookies")
 
-    // Check for primary account
     const primaryToken = getCookie("spotify_primary_token")
     const primaryUserData = getCookie("spotify_primary_user")
     console.log("[v0] Primary token exists:", !!primaryToken, "Primary user data exists:", !!primaryUserData)
@@ -233,7 +250,6 @@ export default function PlaylistSync() {
       }
     }
 
-    // Check for secondary account
     const secondaryToken = getCookie("spotify_secondary_token")
     const secondaryUserData = getCookie("spotify_secondary_user")
     console.log("[v0] Secondary token exists:", !!secondaryToken, "Secondary user data exists:", !!secondaryUserData)
@@ -274,7 +290,6 @@ export default function PlaylistSync() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#181818] to-[#121212]">
-      {/* Header */}
       <header className="bg-black border-b border-[#404040] sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
           <div className="flex items-center gap-3">
@@ -294,13 +309,46 @@ export default function PlaylistSync() {
         </div>
       </header>
 
-      {/* Main Content */}
       <main className="max-w-6xl mx-auto px-6 py-8 space-y-12">
-        {/* Account Connection Section */}
+        {authError && (
+          <Card className="bg-[rgba(226,33,52,0.1)] border-[#e22134] p-4">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="w-5 h-5 text-[#e22134] flex-shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <h3 className="text-[#e22134] font-semibold mb-1">Authentication Error</h3>
+                <p className="text-white text-sm leading-relaxed">{authError.message}</p>
+                {authError.type === "profile_fetch_failed" && authError.message.includes("Development Mode") && (
+                  <div className="mt-3 p-3 bg-[rgba(226,33,52,0.1)] rounded border border-[rgba(226,33,52,0.3)]">
+                    <p className="text-white text-sm">
+                      <strong>Quick Fix:</strong> Go to{" "}
+                      <a
+                        href="https://developer.spotify.com/dashboard"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[#1DB954] hover:underline"
+                      >
+                        developer.spotify.com/dashboard
+                      </a>
+                      , select your app, go to "Users and Access", and add your email address to the user list.
+                    </p>
+                  </div>
+                )}
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setAuthError(null)}
+                className="text-[#e22134] hover:bg-[rgba(226,33,52,0.1)] p-1"
+              >
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
+          </Card>
+        )}
+
         <section>
           <h2 className="text-3xl font-bold text-white mb-6">Connected Accounts</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Primary Account */}
             <Card
               className={`bg-[#282828] border p-6 ${primaryAccount ? "border-[#1DB954] bg-[rgba(29,185,84,0.1)]" : "border-transparent"}`}
             >
@@ -351,7 +399,6 @@ export default function PlaylistSync() {
               </div>
             </Card>
 
-            {/* Secondary Account */}
             <Card
               className={`bg-[#282828] border p-6 ${secondaryAccount ? "border-[#1DB954] bg-[rgba(29,185,84,0.1)]" : "border-transparent hover:bg-[#3e3e3e]"} transition-colors`}
             >
@@ -408,7 +455,6 @@ export default function PlaylistSync() {
           </div>
         </section>
 
-        {/* Sync Configuration */}
         <section>
           <div className="flex justify-between items-center mb-8">
             <h2 className="text-3xl font-bold text-white">Sync Configuration</h2>
@@ -422,7 +468,6 @@ export default function PlaylistSync() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* Sync Direction */}
             <div>
               <h3 className="text-xl font-semibold text-white mb-4">Sync Direction</h3>
               <RadioGroup value={syncDirection} onValueChange={setSyncDirection} className="space-y-4">
@@ -443,7 +488,6 @@ export default function PlaylistSync() {
               </RadioGroup>
             </div>
 
-            {/* Sync Frequency */}
             <div>
               <h3 className="text-xl font-semibold text-white mb-4">Auto Sync Frequency</h3>
               <div className="p-4 bg-[#282828] rounded-lg border border-[#404040]">
@@ -454,12 +498,10 @@ export default function PlaylistSync() {
           </div>
         </section>
 
-        {/* Playlist Selection */}
         <section>
           <h2 className="text-3xl font-bold text-white mb-6">Select Playlists to Sync</h2>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-            {/* Primary Account Playlists */}
             <Card className="bg-[#282828] border-transparent overflow-hidden">
               <div className="p-6 border-b border-[#404040]">
                 <h3 className="text-xl font-semibold text-white mb-4">Primary Account Playlists</h3>
@@ -534,14 +576,12 @@ export default function PlaylistSync() {
               </div>
             </Card>
 
-            {/* Sync Arrow */}
             <div className="flex justify-center items-center">
               <div className="text-[#1DB954]">
                 <ChevronRight className="w-6 h-6" />
               </div>
             </div>
 
-            {/* Secondary Account Playlists */}
             <Card className="bg-[#282828] border-transparent overflow-hidden">
               <div className="p-6 border-b border-[#404040]">
                 <h3 className="text-xl font-semibold text-white mb-4">Secondary Account Playlists</h3>
@@ -594,7 +634,6 @@ export default function PlaylistSync() {
           </div>
         </section>
 
-        {/* Sync History */}
         <section>
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-3xl font-bold text-white">Sync History</h2>

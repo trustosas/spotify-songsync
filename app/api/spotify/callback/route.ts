@@ -79,9 +79,21 @@ export async function GET(request: NextRequest) {
 
     if (!profileResponse.ok) {
       const profileError = await profileResponse.text()
-      console.log("[v0] Profile fetch failed:", profileError)
+      console.log("[v0] Profile fetch failed with status:", profileResponse.status)
+      console.log("[v0] Profile fetch error:", profileError)
+
+      let errorMessage = "Failed to fetch user profile"
+      if (profileResponse.status === 403) {
+        errorMessage =
+          "Your Spotify app is in Development Mode. Add your email to the app's user list in developer.spotify.com/dashboard, or submit your app for review to make it public."
+      } else if (profileResponse.status === 401) {
+        errorMessage = "Authentication failed. Please check your Spotify app credentials."
+      } else {
+        errorMessage = `Profile fetch failed (${profileResponse.status}): ${profileError}`
+      }
+
       return NextResponse.redirect(
-        new URL(`/?error=profile_fetch_failed&details=${encodeURIComponent(profileError)}`, request.url),
+        new URL(`/?error=profile_fetch_failed&details=${encodeURIComponent(errorMessage)}`, request.url),
       )
     }
 
