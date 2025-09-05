@@ -5,18 +5,13 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
   const account = searchParams.get("account")
 
-  console.log(`[v0] Fetching playlists for account: ${account}`)
-
   try {
     // In a real app, you'd retrieve the stored access token for the specified account
     const accessToken = getStoredAccessToken(account!)
 
     if (!accessToken) {
-      console.log(`[v0] No access token found for account: ${account}`)
       return NextResponse.json({ error: "Account not connected" }, { status: 401 })
     }
-
-    console.log(`[v0] Access token found for ${account}, fetching playlists...`)
 
     // Fetch user's playlists
     const playlistsResponse = await fetch("https://api.spotify.com/v1/me/playlists?limit=50", {
@@ -26,49 +21,36 @@ export async function GET(request: NextRequest) {
     })
 
     if (!playlistsResponse.ok) {
-      console.error(`[v0] Playlists API error: ${playlistsResponse.status} ${playlistsResponse.statusText}`)
-      throw new Error(`Failed to fetch playlists: ${playlistsResponse.status}`)
+      throw new Error("Failed to fetch playlists")
     }
 
     const playlistsData = await playlistsResponse.json()
-    console.log(`[v0] Fetched ${playlistsData.items?.length || 0} regular playlists`)
 
     // Also fetch liked songs (saved tracks)
-    console.log(`[v0] Fetching liked songs for ${account}...`)
     const likedSongsResponse = await fetch("https://api.spotify.com/v1/me/tracks?limit=1", {
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
     })
 
-    let likedSongsCount = 0
-    if (likedSongsResponse.ok) {
-      const likedSongsData = await likedSongsResponse.json()
-      likedSongsCount = likedSongsData.total || 0
-      console.log(`[v0] Found ${likedSongsCount} liked songs`)
-    } else {
-      console.error(`[v0] Liked songs API error: ${likedSongsResponse.status} ${likedSongsResponse.statusText}`)
-    }
+    const likedSongsData = await likedSongsResponse.json()
 
-    const allPlaylists = []
-
-    if (likedSongsCount > 0) {
-      allPlaylists.push({
+    // Combine playlists with liked songs
+    const allPlaylists = [
+      {
         id: "liked_songs",
         name: "Liked Songs",
-        tracks: { total: likedSongsCount },
+        tracks: { total: likedSongsData.total },
         owner: { display_name: "You" },
         images: [],
         type: "liked_songs",
-      })
-    }
+      },
+      ...playlistsData.items,
+    ]
 
-    allPlaylists.push(...(playlistsData.items || []))
-
-    console.log(`[v0] Returning ${allPlaylists.length} total playlists (including Liked Songs if applicable)`)
     return NextResponse.json(allPlaylists)
   } catch (error) {
-    console.error(`[v0] Playlists fetch error for ${account}:`, error)
+    console.error("Playlists fetch error:", error)
     return NextResponse.json({ error: "Failed to fetch playlists" }, { status: 500 })
   }
 }
