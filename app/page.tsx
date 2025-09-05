@@ -380,10 +380,10 @@ export default function PlaylistSync() {
                     )}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <h3 className="text-white font-semibold text-sm sm:text-base">Primary Account</h3>
-                    <p className="text-[#b3b3b3] text-xs sm:text-sm truncate">
-                      {primaryAccount?.email || "Connect main account"}
-                    </p>
+                    <h3 className="text-white font-semibold text-sm sm:text-base">
+                      {primaryAccount?.display_name || "Primary Account"}
+                    </h3>
+                    <p className="text-[#b3b3b3] text-xs sm:text-sm truncate">{primaryAccount?.email || ""}</p>
                     <Badge
                       className={`border-none text-xs font-semibold mt-1 ${
                         primaryAccount ? "bg-[rgba(29,185,84,0.2)] text-[#1DB954]" : "bg-[#3e3e3e] text-[#a7a7a7]"
@@ -438,10 +438,10 @@ export default function PlaylistSync() {
                     )}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <h3 className="text-white font-semibold text-sm sm:text-base">Secondary Account</h3>
-                    <p className="text-[#b3b3b3] text-xs sm:text-sm truncate">
-                      {secondaryAccount?.email || "Connect second account"}
-                    </p>
+                    <h3 className="text-white font-semibold text-sm sm:text-base">
+                      {secondaryAccount?.display_name || "Secondary Account"}
+                    </h3>
+                    <p className="text-[#b3b3b3] text-xs sm:text-sm truncate">{secondaryAccount?.email || ""}</p>
                     <Badge
                       className={`border-none text-xs font-semibold mt-1 ${
                         secondaryAccount ? "bg-[rgba(29,185,84,0.2)] text-[#1DB954]" : "bg-[#3e3e3e] text-[#a7a7a7]"
