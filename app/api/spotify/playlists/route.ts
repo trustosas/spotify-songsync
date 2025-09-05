@@ -65,9 +65,9 @@ function getStoredAccessToken(account: string): string | null {
       return null
     }
 
-    const accessToken = decodeURIComponent(tokenCookie.value)
+    const tokenData = JSON.parse(decodeURIComponent(tokenCookie.value))
     console.log(`[v0] Retrieved token for account: ${account}`)
-    return accessToken
+    return tokenData.access_token
   } catch (error) {
     console.error(`[v0] Error retrieving token for ${account}:`, error)
     return null

@@ -109,7 +109,7 @@ export async function GET(request: NextRequest) {
       httpOnly: false, // Allow frontend access
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
-      maxAge: 60 * 60 * 24 * 7, // 7 days instead of 1 hour
+      maxAge: tokens.expires_in || 3600,
     })
 
     response.cookies.set(`spotify_${accountType}_refresh`, tokens.refresh_token || "", {
@@ -123,7 +123,7 @@ export async function GET(request: NextRequest) {
       httpOnly: false,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
-      maxAge: 60 * 60 * 24 * 7, // 7 days instead of 1 hour
+      maxAge: tokens.expires_in || 3600,
     })
 
     console.log("[v0] Cookies set successfully for account type:", accountType)
