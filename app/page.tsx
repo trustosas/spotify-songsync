@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
+import { useToast } from "@/hooks/use-toast"
 import { Search, ChevronRight, Check, AlertCircle, Music, Heart, User, ChevronDown, X } from "lucide-react"
 
 interface SpotifyPlaylist {
@@ -29,6 +30,7 @@ interface SyncHistory {
 }
 
 export default function PlaylistSync() {
+  const { toast } = useToast()
   const [primaryAccount, setPrimaryAccount] = useState<any>(null)
   const [secondaryAccount, setSecondaryAccount] = useState<any>(null)
   const [primaryPlaylists, setPrimaryPlaylists] = useState<SpotifyPlaylist[]>([])
@@ -89,7 +91,11 @@ export default function PlaylistSync() {
       }
     } catch (error) {
       console.error("Failed to connect account:", error)
-      alert("Failed to connect to Spotify. Please try again.")
+      toast({
+        title: "Connection failed",
+        description: "Failed to connect to Spotify. Please try again.",
+        variant: "destructive",
+      })
     } finally {
       setIsLoading(false)
     }
@@ -129,12 +135,20 @@ export default function PlaylistSync() {
 
   const startSync = async () => {
     if (selectedPlaylists.length === 0 && selectedSecondaryPlaylists.length === 0) {
-      alert("Please select at least one playlist to sync.")
+      toast({
+        title: "No playlists selected",
+        description: "Please select at least one playlist to sync.",
+        variant: "destructive",
+      })
       return
     }
 
     if (!secondaryAccount) {
-      alert("Please connect your secondary account first.")
+      toast({
+        title: "Secondary account required",
+        description: "Please connect your secondary account first.",
+        variant: "destructive",
+      })
       return
     }
 
@@ -163,7 +177,10 @@ export default function PlaylistSync() {
           message: `Successfully synced ${selectedPlaylists.length + selectedSecondaryPlaylists.length} playlist${selectedPlaylists.length + selectedSecondaryPlaylists.length > 1 ? "s" : ""}`,
         }
         saveSyncHistory(newHistoryItem)
-        alert(`Sync completed! ${result.totalSongs || 0} songs transferred.`)
+        toast({
+          title: "Sync completed!",
+          description: `${result.totalSongs || 0} songs transferred successfully.`,
+        })
       } else {
         const error = await response.json()
         throw new Error(error.error || "Sync failed")
@@ -180,7 +197,11 @@ export default function PlaylistSync() {
         message: error instanceof Error ? error.message : "Sync failed - Connection error",
       }
       saveSyncHistory(errorHistoryItem)
-      alert(`Sync failed: ${error instanceof Error ? error.message : "Unknown error"}`)
+      toast({
+        title: "Sync failed",
+        description: error instanceof Error ? error.message : "Unknown error occurred",
+        variant: "destructive",
+      })
     } finally {
       setIsLoading(false)
     }
@@ -285,26 +306,28 @@ export default function PlaylistSync() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#181818] to-[#121212]">
       <header className="bg-black border-b border-[#404040] sticky top-0 z-50">
-        <div className="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
-          <div className="flex items-center gap-3">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 sm:py-4 flex justify-between items-center">
+          <div className="flex items-center gap-2 sm:gap-3">
             <img
               src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Spotify_Primary_Logo_RGB_Green-QBKd7gyEYHSO9Dhwxnf1CzNghHQpvw.png"
               alt="Spotify Logo"
-              width="32"
-              height="32"
-              className="rounded-full"
+              width="28"
+              height="28"
+              className="sm:w-8 sm:h-8 rounded-full"
             />
-            <h1 className="text-2xl font-bold text-white">Playlist Sync</h1>
+            <h1 className="text-lg sm:text-2xl font-bold text-white">Playlist Sync</h1>
           </div>
-          <div className="flex items-center gap-3 px-4 py-2 bg-[#282828] rounded-full hover:bg-[#3e3e3e] transition-colors cursor-pointer">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#1DB954] to-[#1ed760]"></div>
-            <span className="text-white font-semibold">{primaryAccount?.display_name || "Not Connected"}</span>
-            <ChevronDown className="w-4 h-4 text-white" />
+          <div className="flex items-center gap-2 sm:gap-3 px-2 sm:px-4 py-2 bg-[#282828] rounded-full hover:bg-[#3e3e3e] transition-colors cursor-pointer">
+            <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-gradient-to-br from-[#1DB954] to-[#1ed760]"></div>
+            <span className="text-white font-semibold text-sm sm:text-base hidden xs:block">
+              {primaryAccount?.display_name || "Not Connected"}
+            </span>
+            <ChevronDown className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
           </div>
         </div>
       </header>
 
-      <main className="max-w-6xl mx-auto px-6 py-8 space-y-12">
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-8 sm:space-y-12">
         {authError && (
           <Card className="bg-[rgba(226,33,52,0.1)] border-[#e22134] p-4">
             <div className="flex items-start gap-3">
@@ -341,26 +364,28 @@ export default function PlaylistSync() {
           </Card>
         )}
 
-        <section>
-          <h2 className="text-3xl font-bold text-white mb-6">Connected Accounts</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <section className="space-y-6 sm:space-y-8">
+          <h2 className="text-2xl sm:text-3xl font-bold text-white mb-6 sm:mb-8">Connected Accounts</h2>
+          <div className="grid grid-cols-1 gap-6 sm:gap-8">
             <Card
-              className={`bg-[#282828] border p-6 ${primaryAccount ? "border-[#1DB954] bg-[rgba(29,185,84,0.1)]" : "border-transparent"}`}
+              className={`bg-[#282828] border p-4 sm:p-6 ${primaryAccount ? "border-[#1DB954] bg-[rgba(29,185,84,0.1)]" : "border-transparent"}`}
             >
-              <div className="flex justify-between items-center">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#1DB954] to-[#1ed760] flex items-center justify-center flex-shrink-0">
+              <div className="space-y-4">
+                <div className="flex items-center gap-3 sm:gap-4">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-[#1DB954] to-[#1ed760] flex items-center justify-center flex-shrink-0">
                     {primaryAccount && (
-                      <span className="text-white font-bold text-sm">
+                      <span className="text-white font-bold text-xs sm:text-sm">
                         {primaryAccount.display_name?.charAt(0).toUpperCase() || "P"}
                       </span>
                     )}
                   </div>
-                  <div>
-                    <h3 className="text-white font-semibold">Primary Account</h3>
-                    <p className="text-[#b3b3b3] text-sm">{primaryAccount?.email || "Connect main account"}</p>
+                  <div className="min-w-0 flex-1">
+                    <h3 className="text-white font-semibold text-sm sm:text-base">Primary Account</h3>
+                    <p className="text-[#b3b3b3] text-xs sm:text-sm truncate">
+                      {primaryAccount?.email || "Connect main account"}
+                    </p>
                     <Badge
-                      className={`border-none text-xs font-semibold ${
+                      className={`border-none text-xs font-semibold mt-1 ${
                         primaryAccount ? "bg-[rgba(29,185,84,0.2)] text-[#1DB954]" : "bg-[#3e3e3e] text-[#a7a7a7]"
                       }`}
                     >
@@ -371,7 +396,8 @@ export default function PlaylistSync() {
                 {primaryAccount ? (
                   <Button
                     variant="outline"
-                    className="border-[#404040] text-white hover:bg-[#3e3e3e] hover:border-white bg-transparent"
+                    size="sm"
+                    className="border-[#404040] text-white hover:bg-[#3e3e3e] hover:border-white bg-transparent text-xs sm:text-sm w-full"
                     onClick={() => {
                       setPrimaryAccount(null)
                       setPrimaryPlaylists([])
@@ -384,7 +410,8 @@ export default function PlaylistSync() {
                   </Button>
                 ) : (
                   <Button
-                    className="bg-[#1DB954] hover:bg-[#1ed760] text-white"
+                    size="sm"
+                    className="bg-[#1DB954] hover:bg-[#1ed760] text-white text-xs sm:text-sm w-full"
                     onClick={() => connectSpotifyAccount("primary")}
                     disabled={isLoading}
                   >
@@ -395,26 +422,28 @@ export default function PlaylistSync() {
             </Card>
 
             <Card
-              className={`bg-[#282828] border p-6 ${secondaryAccount ? "border-[#1DB954] bg-[rgba(29,185,84,0.1)]" : "border-transparent hover:bg-[#3e3e3e]"} transition-colors`}
+              className={`bg-[#282828] border p-4 sm:p-6 ${secondaryAccount ? "border-[#1DB954] bg-[rgba(29,185,84,0.1)]" : "border-transparent hover:bg-[#3e3e3e]"} transition-colors`}
             >
-              <div className="flex justify-between items-center">
-                <div className="flex items-center gap-4">
+              <div className="space-y-4">
+                <div className="flex items-center gap-3 sm:gap-4">
                   <div
-                    className={`w-12 h-12 rounded-full bg-gradient-to-br ${
+                    className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br ${
                       secondaryAccount ? "from-[#1DB954] to-[#1ed760]" : "from-[#535353] to-[#3e3e3e]"
                     } flex items-center justify-center flex-shrink-0`}
                   >
                     {secondaryAccount && (
-                      <span className="text-white font-bold text-sm">
+                      <span className="text-white font-bold text-xs sm:text-sm">
                         {secondaryAccount.display_name?.charAt(0).toUpperCase() || "S"}
                       </span>
                     )}
                   </div>
-                  <div>
-                    <h3 className="text-white font-semibold">Secondary Account</h3>
-                    <p className="text-[#b3b3b3] text-sm">{secondaryAccount?.email || "Connect second account"}</p>
+                  <div className="min-w-0 flex-1">
+                    <h3 className="text-white font-semibold text-sm sm:text-base">Secondary Account</h3>
+                    <p className="text-[#b3b3b3] text-xs sm:text-sm truncate">
+                      {secondaryAccount?.email || "Connect second account"}
+                    </p>
                     <Badge
-                      className={`border-none text-xs font-semibold ${
+                      className={`border-none text-xs font-semibold mt-1 ${
                         secondaryAccount ? "bg-[rgba(29,185,84,0.2)] text-[#1DB954]" : "bg-[#3e3e3e] text-[#a7a7a7]"
                       }`}
                     >
@@ -425,7 +454,8 @@ export default function PlaylistSync() {
                 {secondaryAccount ? (
                   <Button
                     variant="outline"
-                    className="border-[#404040] text-white hover:bg-[#3e3e3e] hover:border-white bg-transparent"
+                    size="sm"
+                    className="border-[#404040] text-white hover:bg-[#3e3e3e] hover:border-white bg-transparent text-xs sm:text-sm w-full"
                     onClick={() => {
                       setSecondaryAccount(null)
                       setSecondaryPlaylists([])
@@ -438,7 +468,8 @@ export default function PlaylistSync() {
                   </Button>
                 ) : (
                   <Button
-                    className="bg-[#1DB954] hover:bg-[#1ed760] text-white"
+                    size="sm"
+                    className="bg-[#1DB954] hover:bg-[#1ed760] text-white text-xs sm:text-sm w-full"
                     onClick={() => connectSpotifyAccount("secondary")}
                     disabled={isLoading || !primaryAccount}
                   >
@@ -451,10 +482,10 @@ export default function PlaylistSync() {
         </section>
 
         <section>
-          <div className="flex justify-between items-center mb-8">
-            <h2 className="text-3xl font-bold text-white">Sync Configuration</h2>
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 sm:gap-0 mb-6 sm:mb-8">
+            <h2 className="text-2xl sm:text-3xl font-bold text-white">Sync Configuration</h2>
             <Button
-              className="bg-[#1DB954] hover:bg-[#1ed760] text-white px-8 py-3 text-lg font-bold"
+              className="bg-[#1DB954] hover:bg-[#1ed760] text-white px-6 sm:px-8 py-3 text-base sm:text-lg font-bold w-full sm:w-auto"
               onClick={startSync}
               disabled={isLoading || (selectedPlaylists.length === 0 && selectedSecondaryPlaylists.length === 0)}
             >
@@ -462,44 +493,44 @@ export default function PlaylistSync() {
             </Button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
             <div>
-              <h3 className="text-xl font-semibold text-white mb-4">Sync Direction</h3>
-              <RadioGroup value={syncDirection} onValueChange={setSyncDirection} className="space-y-4">
-                <div className="flex items-center space-x-3 p-4 bg-[#282828] rounded-lg border border-[#1DB954] bg-[rgba(29,185,84,0.1)]">
+              <h3 className="text-lg sm:text-xl font-semibold text-white mb-4">Sync Direction</h3>
+              <RadioGroup value={syncDirection} onValueChange={setSyncDirection} className="space-y-3 sm:space-y-4">
+                <div className="flex items-center space-x-3 p-3 sm:p-4 bg-[#282828] rounded-lg border border-[#1DB954] bg-[rgba(29,185,84,0.1)]">
                   <RadioGroupItem value="one-way" id="one-way" className="border-[#1DB954] text-[#1DB954]" />
                   <Label htmlFor="one-way" className="flex-1 cursor-pointer">
-                    <div className="text-white font-semibold">One-way sync</div>
-                    <div className="text-[#b3b3b3] text-sm">Primary → Secondary</div>
+                    <div className="text-white font-semibold text-sm sm:text-base">One-way sync</div>
+                    <div className="text-[#b3b3b3] text-xs sm:text-sm">Primary → Secondary</div>
                   </Label>
                 </div>
-                <div className="flex items-center space-x-3 p-4 bg-[#282828] rounded-lg hover:bg-[#3e3e3e] transition-colors">
+                <div className="flex items-center space-x-3 p-3 sm:p-4 bg-[#282828] rounded-lg hover:bg-[#3e3e3e] transition-colors">
                   <RadioGroupItem value="two-way" id="two-way" className="border-[#404040]" />
                   <Label htmlFor="two-way" className="flex-1 cursor-pointer">
-                    <div className="text-white font-semibold">Two-way sync</div>
-                    <div className="text-[#b3b3b3] text-sm">Keep both accounts in sync</div>
+                    <div className="text-white font-semibold text-sm sm:text-base">Two-way sync</div>
+                    <div className="text-[#b3b3b3] text-xs sm:text-sm">Keep both accounts in sync</div>
                   </Label>
                 </div>
               </RadioGroup>
             </div>
 
             <div>
-              <h3 className="text-xl font-semibold text-white mb-4">Auto Sync Frequency</h3>
-              <div className="p-4 bg-[#282828] rounded-lg border border-[#404040]">
-                <div className="text-white font-semibold">Daily</div>
-                <div className="text-[#b3b3b3] text-sm">Automatic sync runs once per day</div>
+              <h3 className="text-lg sm:text-xl font-semibold text-white mb-4">Auto Sync Frequency</h3>
+              <div className="p-3 sm:p-4 bg-[#282828] rounded-lg border border-[#404040]">
+                <div className="text-white font-semibold text-sm sm:text-base">Daily</div>
+                <div className="text-[#b3b3b3] text-xs sm:text-sm">Automatic sync runs once per day</div>
               </div>
             </div>
           </div>
         </section>
 
         <section>
-          <h2 className="text-3xl font-bold text-white mb-6">Select Playlists to Sync</h2>
+          <h2 className="text-2xl sm:text-3xl font-bold text-white mb-4 sm:mb-6">Select Playlists to Sync</h2>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8 items-start">
             <Card className="bg-[#282828] border-transparent overflow-hidden">
-              <div className="p-6 border-b border-[#404040]">
-                <h3 className="text-xl font-semibold text-white mb-4">Primary Account Playlists</h3>
+              <div className="p-4 sm:p-6 border-b border-[#404040]">
+                <h3 className="text-lg sm:text-xl font-semibold text-white mb-4">Primary Account Playlists</h3>
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[#a7a7a7]" />
                   <Input
@@ -512,24 +543,24 @@ export default function PlaylistSync() {
                 </div>
               </div>
 
-              <div className="max-h-96 overflow-y-auto">
+              <div className="max-h-80 sm:max-h-96 overflow-y-auto">
                 {!primaryAccount ? (
-                  <div className="text-center text-[#a7a7a7] p-8">
-                    <User className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                    <p>Connect your primary account to view playlists</p>
+                  <div className="text-center text-[#a7a7a7] p-6 sm:p-8">
+                    <User className="w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-4 opacity-50" />
+                    <p className="text-sm sm:text-base">Connect your primary account to view playlists</p>
                   </div>
                 ) : filteredPlaylists.length === 0 ? (
-                  <div className="text-center text-[#a7a7a7] p-8">
-                    <Music className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                    <p>No playlists found</p>
+                  <div className="text-center text-[#a7a7a7] p-6 sm:p-8">
+                    <Music className="w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-4 opacity-50" />
+                    <p className="text-sm sm:text-base">No playlists found</p>
                   </div>
                 ) : (
                   filteredPlaylists.map((playlist) => (
                     <div
                       key={playlist.id}
-                      className="flex items-center p-4 gap-4 hover:bg-[#3e3e3e] transition-colors cursor-pointer"
+                      className="flex items-center p-3 sm:p-4 gap-3 sm:gap-4 hover:bg-[#3e3e3e] transition-colors cursor-pointer"
                     >
-                      <div className="w-12 h-12 rounded flex-shrink-0">
+                      <div className="w-10 h-10 sm:w-12 sm:h-12 rounded flex-shrink-0">
                         {playlist.images && playlist.images.length > 0 ? (
                           <img
                             src={playlist.images[0].url || "/placeholder.svg"}
@@ -538,17 +569,17 @@ export default function PlaylistSync() {
                           />
                         ) : playlist.name.toLowerCase().includes("liked") ? (
                           <div className="w-full h-full bg-gradient-to-br from-[#450af5] to-[#c4efd9] rounded flex items-center justify-center">
-                            <Heart className="w-6 h-6 text-white fill-current" />
+                            <Heart className="w-5 h-5 sm:w-6 sm:h-6 text-white fill-current" />
                           </div>
                         ) : (
                           <div className="w-full h-full bg-[#3e3e3e] rounded flex items-center justify-center">
-                            <Music className="w-6 h-6 text-[#a7a7a7]" />
+                            <Music className="w-5 h-5 sm:w-6 sm:h-6 text-[#a7a7a7]" />
                           </div>
                         )}
                       </div>
-                      <div className="flex-1">
-                        <div className="text-white font-semibold">{playlist.name}</div>
-                        <div className="text-[#b3b3b3] text-sm">
+                      <div className="flex-1 min-w-0">
+                        <div className="text-white font-semibold text-sm sm:text-base truncate">{playlist.name}</div>
+                        <div className="text-[#b3b3b3] text-xs sm:text-sm">
                           {playlist.tracks.total} songs
                           {playlist.owner.display_name !== primaryAccount?.display_name &&
                             ` • Created by ${playlist.owner.display_name}`}
@@ -563,7 +594,7 @@ export default function PlaylistSync() {
                             setSelectedPlaylists((prev) => prev.filter((id) => id !== playlist.id))
                           }
                         }}
-                        className="border-[#404040] data-[state=checked]:bg-[#1DB954] data-[state=checked]:border-[#1DB954]"
+                        className="border-[#404040] data-[state=checked]:bg-[#1DB954] data-[state=checked]:border-[#1DB954] w-5 h-5 sm:w-4 sm:h-4"
                       />
                     </div>
                   ))
@@ -571,15 +602,15 @@ export default function PlaylistSync() {
               </div>
             </Card>
 
-            <div className="flex justify-center items-center">
+            <div className="hidden lg:flex justify-center items-center">
               <div className="text-[#1DB954]">
                 <ChevronRight className="w-6 h-6" />
               </div>
             </div>
 
             <Card className="bg-[#282828] border-transparent overflow-hidden">
-              <div className="p-6 border-b border-[#404040]">
-                <h3 className="text-xl font-semibold text-white mb-4">Secondary Account Playlists</h3>
+              <div className="p-4 sm:p-6 border-b border-[#404040]">
+                <h3 className="text-lg sm:text-xl font-semibold text-white mb-4">Secondary Account Playlists</h3>
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[#a7a7a7]" />
                   <Input
@@ -590,24 +621,24 @@ export default function PlaylistSync() {
                 </div>
               </div>
 
-              <div className="min-h-48 max-h-96 overflow-y-auto">
+              <div className="min-h-48 max-h-80 sm:max-h-96 overflow-y-auto">
                 {!secondaryAccount ? (
-                  <div className="text-center text-[#a7a7a7] p-8">
-                    <User className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                    <p>Connect your secondary account to view playlists</p>
+                  <div className="text-center text-[#a7a7a7] p-6 sm:p-8">
+                    <User className="w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-4 opacity-50" />
+                    <p className="text-sm sm:text-base">Connect your secondary account to view playlists</p>
                   </div>
                 ) : secondaryPlaylists.length === 0 ? (
-                  <div className="text-center text-[#a7a7a7] p-8">
-                    <Music className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                    <p>Loading playlists...</p>
+                  <div className="text-center text-[#a7a7a7] p-6 sm:p-8">
+                    <Music className="w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-4 opacity-50" />
+                    <p className="text-sm sm:text-base">Loading playlists...</p>
                   </div>
                 ) : (
                   secondaryPlaylists.map((playlist) => (
                     <div
                       key={playlist.id}
-                      className="flex items-center p-4 gap-4 hover:bg-[#3e3e3e] transition-colors cursor-pointer"
+                      className="flex items-center p-3 sm:p-4 gap-3 sm:gap-4 hover:bg-[#3e3e3e] transition-colors cursor-pointer"
                     >
-                      <div className="w-12 h-12 rounded flex-shrink-0">
+                      <div className="w-10 h-10 sm:w-12 sm:h-12 rounded flex-shrink-0">
                         {playlist.images && playlist.images.length > 0 ? (
                           <img
                             src={playlist.images[0].url || "/placeholder.svg"}
@@ -616,17 +647,17 @@ export default function PlaylistSync() {
                           />
                         ) : playlist.name.toLowerCase().includes("liked") ? (
                           <div className="w-full h-full bg-gradient-to-br from-[#450af5] to-[#c4efd9] rounded flex items-center justify-center">
-                            <Heart className="w-6 h-6 text-white fill-current" />
+                            <Heart className="w-5 h-5 sm:w-6 sm:h-6 text-white fill-current" />
                           </div>
                         ) : (
                           <div className="w-full h-full bg-[#3e3e3e] rounded flex items-center justify-center">
-                            <Music className="w-6 h-6 text-[#a7a7a7]" />
+                            <Music className="w-5 h-5 sm:w-6 sm:h-6 text-[#a7a7a7]" />
                           </div>
                         )}
                       </div>
-                      <div className="flex-1">
-                        <div className="text-white font-semibold">{playlist.name}</div>
-                        <div className="text-[#b3b3b3] text-sm">
+                      <div className="flex-1 min-w-0">
+                        <div className="text-white font-semibold text-sm sm:text-base truncate">{playlist.name}</div>
+                        <div className="text-[#b3b3b3] text-xs sm:text-sm">
                           {playlist.tracks.total} songs
                           {playlist.owner.display_name !== secondaryAccount?.display_name &&
                             ` • Created by ${playlist.owner.display_name}`}
@@ -641,7 +672,7 @@ export default function PlaylistSync() {
                             setSelectedSecondaryPlaylists((prev) => prev.filter((id) => id !== playlist.id))
                           }
                         }}
-                        className="border-[#404040] data-[state=checked]:bg-[#1DB954] data-[state=checked]:border-[#1DB954]"
+                        className="border-[#404040] data-[state=checked]:bg-[#1DB954] data-[state=checked]:border-[#1DB954] w-5 h-5 sm:w-4 sm:h-4"
                       />
                     </div>
                   ))
@@ -652,35 +683,44 @@ export default function PlaylistSync() {
         </section>
 
         <section>
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-3xl font-bold text-white">Sync History</h2>
-            <Button variant="ghost" className="text-[#b3b3b3] hover:text-white">
+          <div className="flex justify-between items-center mb-4 sm:mb-6">
+            <h2 className="text-2xl sm:text-3xl font-bold text-white">Sync History</h2>
+            <Button variant="ghost" className="text-[#b3b3b3] hover:text-white text-sm sm:text-base">
               View All
             </Button>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             {syncHistory.slice(0, 3).map((item) => (
-              <Card key={item.id} className="bg-[#282828] border-transparent p-4 hover:bg-[#3e3e3e] transition-colors">
-                <div className="flex items-center gap-4">
+              <Card
+                key={item.id}
+                className="bg-[#282828] border-transparent p-3 sm:p-4 hover:bg-[#3e3e3e] transition-colors"
+              >
+                <div className="flex items-center gap-3 sm:gap-4">
                   <div
-                    className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                    className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
                       item.status === "success"
                         ? "bg-[rgba(29,185,84,0.2)] text-[#1DB954]"
                         : "bg-[rgba(226,33,52,0.2)] text-[#e22134]"
                     }`}
                   >
-                    {item.status === "success" ? <Check className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
+                    {item.status === "success" ? (
+                      <Check className="w-3 h-3 sm:w-4 sm:h-4" />
+                    ) : (
+                      <AlertCircle className="w-3 h-3 sm:w-4 sm:h-4" />
+                    )}
                   </div>
-                  <div className="flex-1">
-                    <div className="text-white font-semibold">{item.message}</div>
-                    <div className="text-[#b3b3b3] text-sm">
+                  <div className="flex-1 min-w-0">
+                    <div className="text-white font-semibold text-sm sm:text-base">{item.message}</div>
+                    <div className="text-[#b3b3b3] text-xs sm:text-sm">
                       {item.status === "success"
                         ? `${item.playlistCount} playlists synced • ${item.songCount} songs transferred`
                         : "Connection timeout • Retry available"}
                     </div>
                   </div>
-                  <div className="text-[#a7a7a7] text-sm font-medium">{formatTimeAgo(item.timestamp)}</div>
+                  <div className="text-[#a7a7a7] text-xs sm:text-sm font-medium flex-shrink-0">
+                    {formatTimeAgo(item.timestamp)}
+                  </div>
                 </div>
               </Card>
             ))}
