@@ -285,12 +285,13 @@ export default function PlaylistSync() {
       <header className="bg-black border-b border-[#404040] sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
           <div className="flex items-center gap-3">
-            <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-              <path
-                d="M16 0C7.164 0 0 7.164 0 16s7.164 16 16 16 16-7.164 16-16S24.836 0 16 0zm7.32 23.076c-.292.484-.916.636-1.4.34-3.836-2.344-8.668-2.876-14.356-1.576-.548.124-1.096-.216-1.22-.764-.124-.548.216-1.096.764-1.22 6.204-1.42 13.348-.932 18.364 2.164.604.372.792 1.156.42 1.76v-.024zm2-4.632c-.372.596-1.164.78-1.764.404-4.396-2.7-11.1-3.484-16.324-1.908-.644.196-1.324-.156-1.52-.8-.196-.644.156-1.324.8-1.52 5.988-1.808 13.584-.932 18.548 2.204.596.372.78 1.164.404 1.764l-.144-.144zm.172-4.828c-5.268-3.128-13.956-3.416-18.988-1.888-.804.244-1.652-.212-1.896-1.016-.244-.804.172-1.652 1.016-1.896 5.768-1.748 15.272-1.412 21.324 2.18.732.436.972 1.384.536 2.116-.436.732-1.384.972-2.116.536l.124-.032z"
-                fill="#1DB954"
-              />
-            </svg>
+            <img
+              src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Spotify_Primary_Logo_RGB_Green-QBKd7gyEYHSO9Dhwxnf1CzNghHQpvw.png"
+              alt="Spotify Logo"
+              width="32"
+              height="32"
+              className="rounded-full"
+            />
             <h1 className="text-2xl font-bold text-white">Playlist Sync</h1>
           </div>
           <div className="flex items-center gap-3 px-4 py-2 bg-[#282828] rounded-full hover:bg-[#3e3e3e] transition-colors cursor-pointer">
@@ -608,6 +609,10 @@ export default function PlaylistSync() {
                             alt={playlist.name}
                             className="w-full h-full object-cover rounded"
                           />
+                        ) : playlist.name.toLowerCase().includes("liked") ? (
+                          <div className="w-full h-full bg-gradient-to-br from-[#450af5] to-[#c4efd9] rounded flex items-center justify-center">
+                            <Heart className="w-6 h-6 text-white fill-current" />
+                          </div>
                         ) : (
                           <div className="w-full h-full bg-[#3e3e3e] rounded flex items-center justify-center">
                             <Music className="w-6 h-6 text-[#a7a7a7]" />
@@ -616,7 +621,11 @@ export default function PlaylistSync() {
                       </div>
                       <div className="flex-1">
                         <div className="text-white font-semibold">{playlist.name}</div>
-                        <div className="text-[#b3b3b3] text-sm">{playlist.tracks.total} songs</div>
+                        <div className="text-[#b3b3b3] text-sm">
+                          {playlist.tracks.total} songs
+                          {playlist.owner.display_name !== secondaryAccount?.display_name &&
+                            ` • Created by ${playlist.owner.display_name}`}
+                        </div>
                       </div>
                     </div>
                   ))
