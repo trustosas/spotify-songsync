@@ -51,29 +51,60 @@ export async function POST(request: NextRequest) {
 
 async function syncLikedSongs(primaryToken: string, secondaryToken: string, direction: string): Promise<number> {
   try {
-    // Get liked songs from primary account
-    const likedSongsResponse = await fetch("https://api.spotify.com/v1/me/tracks?limit=50", {
-      headers: { Authorization: `Bearer ${primaryToken}` },
-    })
+    // Get all liked songs from primary account using pagination
+    const allLikedSongs: any[] = []
+    let nextUrl: string | null = "https://api.spotify.com/v1/me/tracks?limit=50"
+    
+    while (nextUrl) {
+      const likedSongsResponse = await fetch(nextUrl, {
+        headers: { Authorization: `Bearer ${primaryToken}` },
+      })
 
-    const likedSongs = await likedSongsResponse.json()
-
-    if (direction === "one-way") {
-      // Add songs to secondary account's liked songs
-      const trackIds = likedSongs.items.map((item: any) => item.track.id)
-
-      if (trackIds.length > 0) {
-        await fetch("https://api.spotify.com/v1/me/tracks", {
-          method: "PUT",
-          headers: {
-            Authorization: `Bearer ${secondaryToken}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ ids: trackIds }),
-        })
+      if (!likedSongsResponse.ok) {
+        throw new Error(`Failed to fetch liked songs: ${likedSongsResponse.status}`)
       }
 
-      return trackIds.length
+      const likedSongs = await likedSongsResponse.json()
+      allLikedSongs.push(...likedSongs.items)
+      nextUrl = likedSongs.next
+    }
+
+    console.log(`[v0] Fetched ${allLikedSongs.length} total liked songs`)
+
+    if (direction === "one-way") {
+      // Add songs to secondary account's liked songs in batches
+      const trackIds = allLikedSongs.map((item: any) => item.track.id)
+      
+      if (trackIds.length > 0) {
+        // Spotify API allows up to 50 tracks per request for saving tracks
+        const batchSize = 50
+        let syncedCount = 0
+        
+        for (let i = 0; i < trackIds.length; i += batchSize) {
+          const batch = trackIds.slice(i, i + batchSize)
+          
+          const saveResponse = await fetch("https://api.spotify.com/v1/me/tracks", {
+            method: "PUT",
+            headers: {
+              Authorization: `Bearer ${secondaryToken}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ ids: batch }),
+          })
+          
+          if (!saveResponse.ok) {
+            console.error(`[v0] Failed to save batch ${Math.floor(i / batchSize) + 1}:`, saveResponse.status)
+            continue
+          }
+          
+          syncedCount += batch.length
+          console.log(`[v0] Synced batch ${Math.floor(i / batchSize) + 1}: ${batch.length} songs`)
+        }
+        
+        return syncedCount
+      }
+
+      return 0
     }
 
     // For two-way sync, implement bidirectional logic here
