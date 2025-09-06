@@ -31,6 +31,7 @@ export async function POST(request: NextRequest) {
     authUrl.searchParams.append("scope", scopes)
     authUrl.searchParams.append("redirect_uri", REDIRECT_URI)
     authUrl.searchParams.append("state", `${state}_${accountType}`)
+    authUrl.searchParams.append("show_dialog", "true")
 
     console.log("[v0] Generated auth URL:", authUrl.toString())
 
